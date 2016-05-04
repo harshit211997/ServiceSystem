@@ -27,13 +27,16 @@ public class MyAccessibilityService extends AccessibilityService {
         Log.i(LOGTAG, "MyAccessibility Started");
 
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
-
+            Log.d(LOGTAG, getTypeName(event.getEventType()));
             String eventText = getTypeName(event.getEventType()) + "===="
                     + event.getContentDescription();
             Log.d("PackageName", event.getPackageName().toString());
             Log.d("EventName", eventText);
             traverseNode(getRootInActiveWindow());
 
+        }
+        else{
+            Log.d(LOGTAG, getTypeName(event.getEventType()));
         }
     }
 
