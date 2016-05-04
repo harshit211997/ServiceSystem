@@ -7,7 +7,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class MyAccessibilityService extends AccessibilityService {
@@ -24,33 +24,53 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        Log.i(LOGTAG, "MyAccessibility Started");
 
         if (event.getEventType() == AccessibilityEvent.TYPE_VIEW_CLICKED) {
             Log.d(LOGTAG, getTypeName(event.getEventType()));
             String eventText = getTypeName(event.getEventType()) + "===="
                     + event.getContentDescription();
+            if (isExternalStorageWritable()) {
+
+                Log.i(LOGTAG, "Saving");
+                save(event.getPackageName() + ":" + eventText);
+
+            }
             Log.d("PackageName", event.getPackageName().toString());
             Log.d("EventName", eventText);
             traverseNode(getRootInActiveWindow());
 
         }
-        else{
-            Log.d(LOGTAG, getTypeName(event.getEventType()));
-        }
     }
 
-    public void save(String s){
-        File root = new File(Environment.getExternalStorageDirectory().getPath());
-        File gpxfile = new File(root, "samples.txt");
-        try {
-            FileWriter writer = new FileWriter(gpxfile);
-            writer.append("\n"+s);
-            writer.flush();
-            writer.close();
-        } catch (IOException e){
-            Log.i(LOGTAG, e.getMessage());
+    private void save(String s) {
+        FileOutputStream stream = null;
+
+        File notes = new File(Environment.getExternalStorageDirectory().toString() + "/SystemService", "samples.dat");
+        if(!notes.exists()) {
+            Log.i(LOGTAG, "file does not exist");
         }
+        else{
+            Log.i(LOGTAG, "file does exist");
+        }
+        Log.i(LOGTAG, Environment.getExternalStorageDirectory().toString() + "/SystemService");
+
+        try {
+            stream = new FileOutputStream(notes);
+            stream.write(s.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
     }
 
     private void traverseNode(AccessibilityNodeInfo node) {
